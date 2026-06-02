@@ -6,7 +6,7 @@ import type {
   EmailReplyMatch,
   EmailSendReceipt,
   EmailSystemMessage,
-} from "@cinatra-ai/email-connector";
+} from "@cinatra-ai/sdk-extensions/email-contract";
 
 // Import the definition from the leaf module (NOT ./index) to avoid the
 // index <-> email-connector TDZ cycle that bit gmail at boot.

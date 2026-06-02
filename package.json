@@ -16,17 +16,11 @@
     "resend": "^4.0.1"
   },
   "peerDependencies": {
-    "@cinatra-ai/sdk-extensions": "*",
-    "@cinatra-ai/email-connector": "*"
+    "@cinatra-ai/sdk-extensions": "*"
   },
   "cinatra": {
     "apiVersion": "cinatra.ai/v1",
     "kind": "connector",
-    "serverEntry": "./register",
-    "requestedHostPorts": [
-      "capabilities"
-    ],
-    "sdkAbiRange": "^1",
     "dependencies": [
       {
         "packageName": "@cinatra-ai/email-connector",
@@ -38,6 +32,11 @@
         },
         "requirement": "required"
       }
-    ]
+    ],
+    "serverEntry": "./register",
+    "requestedHostPorts": [
+      "capabilities"
+    ],
+    "sdkAbiRange": "^2"
   }
 }
