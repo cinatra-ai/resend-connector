@@ -23,4 +23,7 @@ export const resendConnectorDefinition: EmailConnectorDefinition = {
   // Instance-level credentials (RESEND_API_KEY / in-app key) — no per-user
   // connection needed, so this provider is eligible for platform/system mail.
   supportsSystemEmail: true,
+  // Explicitly INSTANCE-scoped: never auto-picked by the host's per-user
+  // active-connector resolution (see EmailConnectorDefinition.connectionScope).
+  connectionScope: "instance",
 };

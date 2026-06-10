@@ -16,23 +16,32 @@ export interface ResendConnectorDeps {
   decryptSecret: (input: { ciphertext: string; iv: string }, aad?: string) => string;
 }
 
-let _deps: ResendConnectorDeps | null = null;
+// Anchor the deps slot on `globalThis` via a namespaced+versioned Symbol so the
+// activation-time registration (this connector's serverEntry `register(ctx)`)
+// and runtime callers in SEPARATELY-COMPILED Next.js bundles resolve the SAME
+// slot. (Same cross-compilation reason as the apify/apollo/gemini/tailscale
+// deps slots + the SDK DI contracts.)
+const RESEND_DEPS_KEY = Symbol.for("@cinatra-ai/resend-connector:host-deps/v1");
+type DepsHolder = { [k: symbol]: ResendConnectorDeps | null | undefined };
+const _holder = globalThis as unknown as DepsHolder;
 
 export function registerResendConnector(deps: ResendConnectorDeps): void {
-  _deps = deps;
+  _holder[RESEND_DEPS_KEY] = deps;
 }
 
 export function getResendDeps(): ResendConnectorDeps {
-  if (!_deps) {
+  const deps = _holder[RESEND_DEPS_KEY];
+  if (!deps) {
     throw new Error(
       "@cinatra-ai/resend-connector: host runtime deps not registered. " +
-        "Call registerResendConnector(deps) at boot (src/lib/register-email-providers.ts).",
+        "The connector's serverEntry register(ctx) binds them at activation " +
+        "(tests: call registerResendConnector(stubDeps) in setup).",
     );
   }
-  return _deps;
+  return deps;
 }
 
 /** @internal Only for tests. */
 export function _resetResendDepsForTests(): void {
-  _deps = null;
+  _holder[RESEND_DEPS_KEY] = null;
 }
