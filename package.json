@@ -29,6 +29,11 @@
   "cinatra": {
     "apiVersion": "cinatra.ai/v1",
     "kind": "connector",
+    "vendor": {
+      "key": "cinatra-ai",
+      "name": "Cinatra"
+    },
+    "displayName": "Resend",
     "dependencies": [
       {
         "packageName": "@cinatra-ai/email-connector",
