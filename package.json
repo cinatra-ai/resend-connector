@@ -18,7 +18,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "resend": "^4.0.1"
+    "resend": "^6.0.0"
   },
   "peerDependencies": {
     "@cinatra-ai/sdk-extensions": "*"
