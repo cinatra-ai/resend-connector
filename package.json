@@ -36,6 +36,7 @@
       "name": "Cinatra"
     },
     "displayName": "Resend",
+    "logo": "./cinatra/logo.svg",
     "dependencies": [
       {
         "packageName": "@cinatra-ai/email-connector",
