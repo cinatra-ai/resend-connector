@@ -60,7 +60,7 @@ export type SaveResendConfigInput = {
   replyTo?: string;
   // When provided (non-empty), replaces the stored key. When the empty string
   // is passed explicitly with `clearApiKey:true`, the override is removed and
-  // the env RESEND_API_KEY becomes the source again. Undefined = leave as-is.
+  // the host-resolved CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY override becomes the source again. Undefined = leave as-is.
   apiKey?: string;
   clearApiKey?: boolean;
 };
@@ -90,7 +90,7 @@ export function saveResendConfig(input: SaveResendConfigInput): void {
   deps.writeConnectorConfigToDatabase(RESEND_CONNECTOR_ID, next);
 }
 
-// API key precedence: in-app encrypted override (if set) > env RESEND_API_KEY.
+// API key precedence: in-app encrypted override (if set) > host-resolved CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY.
 // Returns undefined when neither is configured.
 //
 // FAIL CLOSED: if an override exists but cannot be decrypted (key rotated /
@@ -112,7 +112,7 @@ export function resolveResendApiKey(): string | undefined {
       return undefined;
     }
   }
-  const envKey = process.env.RESEND_API_KEY?.trim();
+  const envKey = getResendDeps().resolveEnvOverrides?.().apiKey?.trim();
   return envKey && envKey.length > 0 ? envKey : undefined;
 }
 
@@ -139,7 +139,7 @@ export function getResendStatus(): {
     }
     return {
       status: "not_connected",
-      detail: "No Resend API key. Set RESEND_API_KEY in the instance env or paste one in /connectors/resend.",
+      detail: "No Resend API key. Set CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY in the instance env or paste one in /connectors/resend.",
     };
   }
   if (!config.fromEmail) {
