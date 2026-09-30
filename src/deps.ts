@@ -14,6 +14,12 @@ export interface ResendConnectorDeps {
   encryptSecret: (plaintext: string, aad?: string) => { ciphertext: string; iv: string };
   /** AES-256-GCM decrypt a secret. Throws on auth-tag mismatch. */
   decryptSecret: (input: { ciphertext: string; iv: string }, aad?: string) => string;
+  /**
+   * The host resolves this package's manifest-declared environment overrides,
+   * keyed by the stored key (for example `apiKey`). A host without the member
+   * yields none.
+   */
+  resolveEnvOverrides?: () => Record<string, string>;
 }
 
 // Anchor the deps slot on `globalThis` via a namespaced+versioned Symbol so the

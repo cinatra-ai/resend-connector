@@ -11,7 +11,7 @@
  * registers a stub deps object — mirroring gmail-connector's
  * `registerGmailConnector(stubDeps)` pattern — even for the env-var-key path.
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // `vi.mock` factories are hoisted above the module's imports, so a factory
 // that closes over a plain top-level `const` can run before that const is
@@ -52,8 +52,11 @@ function stubDeps(): ResendConnectorDeps {
     decryptSecret: vi.fn(() => {
       throw new Error("not wired in this test");
     }),
+    resolveEnvOverrides: () => envOverrides,
   };
 }
+
+let envOverrides: Record<string, string> = {};
 
 const baseInput = (over: Partial<ResendSendInput> = {}): ResendSendInput => ({
   from: "Cinatra <no-reply@mail.cinatra.ai>",
@@ -63,26 +66,20 @@ const baseInput = (over: Partial<ResendSendInput> = {}): ResendSendInput => ({
   ...over,
 });
 
-const originalEnvKey = process.env.RESEND_API_KEY;
-
 describe("sendViaResend guards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sendMock.mockClear();
     _resetResendDepsForTests();
     registerResendConnector(stubDeps());
-    // No in-app override configured — resolveResendApiKey falls back to env.
+    // No in-app override configured — resolveResendApiKey falls back to the
+    // host-resolved override.
     readConfigMock.mockReturnValue({});
-    process.env.RESEND_API_KEY = "test-key-not-real";
-  });
-
-  afterEach(() => {
-    if (originalEnvKey === undefined) delete process.env.RESEND_API_KEY;
-    else process.env.RESEND_API_KEY = originalEnvKey;
+    envOverrides = { apiKey: "test-key-not-real" };
   });
 
   it("throws when no API key is configured at all", async () => {
-    delete process.env.RESEND_API_KEY;
+    envOverrides = {};
     await expect(sendViaResend(baseInput())).rejects.toThrow(
       "Resend is not configured",
     );

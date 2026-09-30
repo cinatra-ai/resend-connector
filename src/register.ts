@@ -39,7 +39,11 @@ function hostService<T>(ctx: ExtensionHostContext, capability: string): T {
 
 export function register(ctx: ExtensionHostContext): void {
   const config = () =>
-    hostService<HostConnectorConfigService>(ctx, "@cinatra-ai/host:connector-config");
+    hostService<
+      HostConnectorConfigService & {
+        resolveEnvOverrides?(packageName: string): Record<string, string>;
+      }
+    >(ctx, "@cinatra-ai/host:connector-config");
   const codec = () =>
     hostService<HostSecretsCodecService>(ctx, "@cinatra-ai/host:secrets-codec");
 
@@ -50,6 +54,7 @@ export function register(ctx: ExtensionHostContext): void {
       config().write(connectorId, value),
     encryptSecret: (plaintext, aad) => codec().encryptSecret(plaintext, aad),
     decryptSecret: (input, aad) => codec().decryptSecret(input, aad),
+    resolveEnvOverrides: () => config().resolveEnvOverrides?.(PACKAGE_NAME) ?? {},
   });
 
   ctx.capabilities.registerProvider("email-send", {
