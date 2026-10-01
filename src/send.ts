@@ -46,7 +46,7 @@ export async function sendViaResend(input: ResendSendInput): Promise<ResendSendR
   const apiKey = resolveResendApiKey();
   if (!apiKey) {
     throw new Error(
-      "Resend is not configured (no API key). Set CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY in the instance env or paste one in /connectors/resend.",
+      "Resend is not configured (no API key). Set RESEND_API_KEY in the instance env or paste one in /connectors/resend.",
     );
   }
 
