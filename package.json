@@ -56,7 +56,7 @@
     "sdkAbiRange": "^2",
     "consumes": [],
     "envOverrides": {
-      "CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY": "secrets:apiKey"
+      "RESEND_API_KEY": "secrets:apiKey"
     }
   }
 }

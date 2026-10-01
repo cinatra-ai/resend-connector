@@ -26,7 +26,8 @@ vi.mock("resend", () => ({
   }),
 }));
 
-import { resolveResendApiKey } from "../config";
+import { resolveResendApiKey, getResendStatus } from "../config";
+import { sendViaResend } from "../send";
 import { register } from "../register";
 import {
   registerResendConnector,
@@ -62,7 +63,7 @@ describe("resolveResendApiKey override road", () => {
     expect(resolveResendApiKey()).toBe("override-key-1");
   });
 
-  it("A2: does not read the old process variable", () => {
+  it("A2: reads no process variable itself, the plain name included", () => {
     const name = "RESEND_API_KEY";
     const before = process.env[name];
     process.env[name] = "old-name-key-2";
@@ -127,13 +128,42 @@ describe("resolveResendApiKey override road", () => {
     expect(resolveSpy).toHaveBeenCalledWith("@cinatra-ai/resend-connector");
   });
 
-  it("A8: the manifest declares the namespaced override and only the capabilities port", () => {
+  it("A8: the manifest declares the plain deployment name and only the capabilities port", () => {
     const pkg = JSON.parse(
       readFileSync(fileURLToPath(new URL("../../package.json", import.meta.url)), "utf8"),
     );
-    expect(pkg.cinatra.envOverrides).toEqual({
-      CINATRA_EXT_CINATRA_HAI_SRESEND_HCONNECTOR__RESEND_API_KEY: "secrets:apiKey",
-    });
+    expect(pkg.cinatra.envOverrides).toEqual({ RESEND_API_KEY: "secrets:apiKey" });
+    expect(
+      Object.keys(pkg.cinatra.envOverrides).filter((k) => k.startsWith("CINATRA_EXT_")),
+    ).toEqual([]);
     expect(pkg.cinatra.requestedHostPorts).toEqual(["capabilities"]);
+  });
+
+  it("A9: the missing-key status names the plain variable", () => {
+    registerResendConnector(stubDeps(() => ({})));
+    readConfigMock.mockReturnValue({});
+    const status = getResendStatus();
+    expect(status.status).toBe("not_connected");
+    expect(status.detail).toContain("Set RESEND_API_KEY in the instance env");
+    expect(status.detail).not.toContain("CINATRA_EXT_");
+  });
+
+  it("A10: the missing-key send error names the plain variable", async () => {
+    registerResendConnector(stubDeps(() => ({})));
+    readConfigMock.mockReturnValue({});
+    const input = {
+      from: "Cinatra <no-reply@mail.cinatra.ai>",
+      to: ["alice@example.com"],
+      subject: "Hi",
+      text: "Hello",
+    };
+    const err = await sendViaResend(input).then(
+      () => undefined,
+      (e: unknown) => e as Error,
+    );
+    expect(err).toBeInstanceOf(Error);
+    expect(err?.message).toContain("Set RESEND_API_KEY in the instance env");
+    expect(err?.message).not.toContain("CINATRA_EXT_");
+    expect(sendMock).not.toHaveBeenCalled();
   });
 });
